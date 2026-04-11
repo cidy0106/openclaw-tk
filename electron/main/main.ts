@@ -10,6 +10,7 @@ import { PLATFORMS, getPlatform } from "../platform-login/platforms";
 import { GatewayProcess } from "./gateway-process";
 import { createAppMenu } from "./menu";
 import { createTray, destroyTray } from "./tray";
+import { loadWindowState, saveWindowState, applyWindowState } from "./window-manager";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -34,10 +35,13 @@ gateway.on("status", (status: string) => {
 
 function createWindow(gatewayPort: number): void {
   const preloadPath = path.join(__dirname, "preload.cjs");
+  const windowState = loadWindowState();
 
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    x: windowState.x,
+    y: windowState.y,
+    width: windowState.width,
+    height: windowState.height,
     minWidth: 800,
     minHeight: 600,
     titleBarStyle: "hiddenInset",
@@ -50,6 +54,26 @@ function createWindow(gatewayPort: number): void {
       sandbox: false,
     },
   });
+
+  applyWindowState(mainWindow, windowState);
+
+  // Debounce saves so rapid resize/move events don't thrash the disk.
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  const debouncedSave = () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+    saveTimeout = setTimeout(() => {
+      if (mainWindow) {
+        saveWindowState(mainWindow);
+      }
+    }, 500);
+  };
+
+  mainWindow.on("resize", debouncedSave);
+  mainWindow.on("move", debouncedSave);
+  mainWindow.on("maximize", debouncedSave);
+  mainWindow.on("unmaximize", debouncedSave);
 
   mainWindow.once("ready-to-show", () => {
     mainWindow?.show();
