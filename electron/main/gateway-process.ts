@@ -24,6 +24,10 @@ export class GatewayProcess extends EventEmitter {
   private _child: ChildProcess | null = null;
   private _healthTimer: ReturnType<typeof setInterval> | null = null;
 
+  // Project paths — computed once from __dirname
+  private readonly _projectRoot = path.resolve(__dirname, "..", "..");
+  private readonly _stateDir = path.resolve(this._projectRoot, ".openclaw-upstream-state");
+
   // ── Public getters ───────────────────────────────────────────────────
 
   get status(): GatewayStatus {
@@ -38,6 +42,10 @@ export class GatewayProcess extends EventEmitter {
     return this._token;
   }
 
+  get stateDir(): string {
+    return this._stateDir;
+  }
+
   // ── Lifecycle ────────────────────────────────────────────────────────
 
   async start(): Promise<number> {
@@ -49,14 +57,8 @@ export class GatewayProcess extends EventEmitter {
 
     this._port = await findFreePort();
 
-    // __dirname is the built output dir (dist/electron). Go up two levels to project root.
-    const projectRoot = path.resolve(__dirname, "..", "..");
-
-    // Use the project's own state directory, NOT the system ~/.openclaw/.
-    // This ensures we connect to the zero-token gateway with its own providers/config.
-    const stateDir = path.resolve(projectRoot, ".openclaw-upstream-state");
-    const configPath = path.resolve(stateDir, "openclaw.json");
-    const entryPath = path.resolve(projectRoot, "dist", "entry.js");
+    const configPath = path.resolve(this._stateDir, "openclaw.json");
+    const entryPath = path.resolve(this._projectRoot, "dist", "entry.js");
 
     // Read the gateway token from the project config, or generate one.
     this._token = readGatewayTokenFromConfig(configPath) || crypto.randomBytes(16).toString("hex");
@@ -67,7 +69,7 @@ export class GatewayProcess extends EventEmitter {
       env: {
         ...process.env,
         OPENCLAW_CONFIG_PATH: configPath,
-        OPENCLAW_STATE_DIR: stateDir,
+        OPENCLAW_STATE_DIR: this._stateDir,
         OPENCLAW_GATEWAY_PORT: String(this._port),
         OPENCLAW_GATEWAY_TOKEN: this._token,
       },
@@ -148,6 +150,22 @@ export class GatewayProcess extends EventEmitter {
   async restart(): Promise<number> {
     await this.stop();
     return this.start();
+  }
+
+  /**
+   * Send SIGUSR1 to the gateway to trigger a config/credential reload.
+   * This is used after a platform login or logout so the gateway
+   * picks up the new auth-profiles.json without a full restart.
+   */
+  reload(): void {
+    if (this._child && this._child.exitCode === null) {
+      try {
+        this._child.kill("SIGUSR1");
+        this.emit("log", "stdout", "Sent SIGUSR1 to gateway for credential reload");
+      } catch {
+        // Process may have already exited
+      }
+    }
   }
 
   // ── Internals ────────────────────────────────────────────────────────

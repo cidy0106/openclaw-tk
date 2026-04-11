@@ -1,99 +1,121 @@
+/**
+ * Credential store that writes directly to the gateway's auth-profiles.json.
+ *
+ * Instead of maintaining a separate encrypted store, FreeClaw writes credentials
+ * in the exact format the zero-token gateway expects. This means the gateway can
+ * read them natively without any bridging.
+ */
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
-import { safeStorage } from "electron";
 
-interface StoredEntry {
-  encrypted: string; // base64
-  updatedAt: number;
+// Set by init() from gateway-process.ts before gateway starts.
+let _stateDir = "";
+
+interface AuthProfile {
+  type: "token";
+  provider: string;
+  token: string; // JSON-stringified credential object
 }
 
-type CredentialFile = Record<string, StoredEntry>;
-
-const FREECLAW_DIR = path.join(os.homedir(), ".freeclaw");
-const CRED_PATH = path.join(FREECLAW_DIR, "credentials.enc.json");
-
-// In-memory cache to avoid repeated synchronous disk reads in the main process.
-let _cache: CredentialFile | null = null;
-
-function ensureDir(): void {
-  if (!fs.existsSync(FREECLAW_DIR)) {
-    fs.mkdirSync(FREECLAW_DIR, { mode: 0o700, recursive: true });
-  }
+interface AuthProfilesFile {
+  version: number;
+  profiles: Record<string, AuthProfile>;
+  order: Record<string, unknown>;
+  lastGood: Record<string, unknown>;
+  usageStats: Record<string, unknown>;
 }
 
-function readFile(): CredentialFile {
-  if (_cache) {
-    return _cache;
-  }
+/**
+ * Must be called before any other function.
+ * @param stateDir The openclaw state directory (e.g. .openclaw-upstream-state)
+ */
+export function init(stateDir: string): void {
+  _stateDir = stateDir;
+}
+
+function authProfilesPath(): string {
+  return path.join(_stateDir, "agents", "main", "agent", "auth-profiles.json");
+}
+
+function readAuthProfiles(): AuthProfilesFile {
+  const filePath = authProfilesPath();
   try {
-    const data = fs.readFileSync(CRED_PATH, "utf-8");
-    _cache = JSON.parse(data) as CredentialFile;
-    return _cache;
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, "utf-8")) as AuthProfilesFile;
+    }
   } catch {
-    _cache = {};
-    return _cache;
+    // Corrupted file — start fresh
   }
+  return { version: 1, profiles: {}, order: {}, lastGood: {}, usageStats: {} };
+}
+
+function writeAuthProfiles(data: AuthProfilesFile): void {
+  const filePath = authProfilesPath();
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+}
+
+// In-memory cache
+let _cache: AuthProfilesFile | null = null;
+
+function getProfiles(): AuthProfilesFile {
+  if (!_cache) {
+    _cache = readAuthProfiles();
+  }
+  return _cache;
 }
 
 function invalidateCache(): void {
   _cache = null;
 }
 
-function writeFile(data: CredentialFile): void {
-  ensureDir();
-  fs.writeFileSync(CRED_PATH, JSON.stringify(data, null, 2), {
-    mode: 0o600,
-  });
-}
+/**
+ * Save a credential for a platform in the gateway's auth-profiles.json.
+ * The credential object is JSON-stringified as the `token` field.
+ */
+export function saveCredential(platformId: string, credentials: Record<string, string>): void {
+  const profiles = getProfiles();
+  const profileKey = `${platformId}:default`;
 
-export function saveCredential(platformId: string, creds: Record<string, string>): void {
-  const plaintext = JSON.stringify(creds);
-  if (!safeStorage.isEncryptionAvailable()) {
-    console.warn(
-      "[credential-store] safeStorage encryption is NOT available. " +
-        "Credentials will NOT be stored. Please set up a system keyring.",
-    );
-    return;
-  }
-  const encrypted = safeStorage.encryptString(plaintext).toString("base64");
+  profiles.profiles[profileKey] = {
+    type: "token",
+    provider: platformId,
+    token: JSON.stringify(credentials),
+  };
 
-  const file = readFile();
-  file[platformId] = { encrypted, updatedAt: Date.now() };
   invalidateCache();
-  writeFile(file);
+  writeAuthProfiles(profiles);
 }
 
-export function loadCredentials(): Record<string, Record<string, string>> {
-  const file = readFile();
-  const result: Record<string, Record<string, string>> = {};
-
-  for (const [id, entry] of Object.entries(file)) {
-    try {
-      const buf = Buffer.from(entry.encrypted, "base64");
-      let plaintext: string;
-      if (safeStorage.isEncryptionAvailable()) {
-        plaintext = safeStorage.decryptString(buf);
-      } else {
-        plaintext = buf.toString("utf-8");
-      }
-      result[id] = JSON.parse(plaintext) as Record<string, string>;
-    } catch {
-      // Skip corrupted entries.
-    }
-  }
-
-  return result;
-}
-
+/**
+ * Remove a platform's credential from auth-profiles.json.
+ */
 export function removeCredential(platformId: string): void {
-  const file = readFile();
-  delete file[platformId];
+  const profiles = getProfiles();
+  const profileKey = `${platformId}:default`;
+  delete profiles.profiles[profileKey];
   invalidateCache();
-  writeFile(file);
+  writeAuthProfiles(profiles);
 }
 
+/**
+ * Check if a platform has stored credentials.
+ */
 export function hasCredential(platformId: string): boolean {
-  const file = readFile();
-  return platformId in file;
+  const profiles = getProfiles();
+  const profileKey = `${platformId}:default`;
+  return profileKey in profiles.profiles;
+}
+
+/**
+ * Get all connected platform IDs.
+ */
+export function getConnectedPlatforms(): string[] {
+  const profiles = getProfiles();
+  return Object.keys(profiles.profiles)
+    .filter((key) => key.endsWith(":default"))
+    .map((key) => key.replace(/:default$/, ""));
 }

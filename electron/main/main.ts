@@ -1,6 +1,7 @@
 import path from "node:path";
 import { app, BrowserWindow, globalShortcut, ipcMain, shell } from "electron";
 import {
+  init as initCredentialStore,
   saveCredential,
   removeCredential,
   hasCredential,
@@ -151,6 +152,8 @@ ipcMain.handle("freeclaw:platform:login", async (_event, platformId: string) => 
   const result = await openLoginWindow(platformId, mainWindow);
   if (result.ok && result.credentials) {
     saveCredential(platformId, result.credentials);
+    // Signal gateway to reload credentials (SIGUSR1 triggers config reload)
+    gateway.reload();
     // Notify renderer of updated status.
     broadcastPlatformStatus();
   }
@@ -160,6 +163,7 @@ ipcMain.handle("freeclaw:platform:login", async (_event, platformId: string) => 
 ipcMain.handle("freeclaw:platform:logout", async (_event, platformId: string) => {
   removeCredential(platformId);
   await clearPlatformSession(platformId);
+  gateway.reload();
   broadcastPlatformStatus();
 });
 
@@ -181,6 +185,9 @@ function broadcastPlatformStatus(): void {
 // ── App lifecycle ─────────────────────────────────────────────────────
 
 void app.whenReady().then(async () => {
+  // Initialize credential store to write directly to gateway's auth-profiles.json
+  initCredentialStore(gateway.stateDir);
+
   let port: number;
   try {
     port = await gateway.start();
