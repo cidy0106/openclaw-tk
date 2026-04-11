@@ -34,7 +34,7 @@
     "skills/"
   ],
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/electron/main.cjs",
   "exports": {
     ".": "./dist/index.js",
     "./plugin-sdk": {
@@ -1082,6 +1082,10 @@
     "docs:spellcheck:fix": "bash scripts/docs-spellcheck.sh --write",
     "dup:check": "jscpd src extensions test scripts --format typescript,javascript --pattern \"**/*.{ts,tsx,js,mjs,cjs}\" --gitignore --noSymlinks --ignore \"**/node_modules/**,**/dist/**,**/.git/**,**/coverage/**,**/build/**,**/.build/**,**/.artifacts/**\" --min-lines 12 --min-tokens 80 --reporters console",
     "dup:check:json": "jscpd src extensions test scripts --format typescript,javascript --pattern \"**/*.{ts,tsx,js,mjs,cjs}\" --gitignore --noSymlinks --ignore \"**/node_modules/**,**/dist/**,**/.git/**,**/coverage/**,**/build/**,**/.build/**,**/.artifacts/**\" --min-lines 12 --min-tokens 80 --reporters json --output .artifacts/jscpd",
+    "electron:build": "vite build --config vite.electron.config.ts",
+    "electron:dev": "concurrently \"pnpm ui:dev\" \"pnpm electron:build && electron dist/electron/main.cjs\"",
+    "electron:pack": "pnpm build && pnpm ui:build && pnpm electron:build && electron-builder --config electron-builder.yml",
+    "electron:start": "pnpm build && pnpm ui:build && pnpm electron:build && electron dist/electron/main.cjs",
     "format": "oxfmt --write",
     "format:all": "pnpm format && pnpm format:swift",
     "format:check": "oxfmt --check",
@@ -1173,7 +1177,6 @@
   "dependencies": {
     "@agentclientprotocol/sdk": "0.16.1",
     "@anthropic-ai/vertex-sdk": "^0.14.4",
-    "@modelcontextprotocol/sdk": "1.28.0",
     "@aws-sdk/client-bedrock": "^3.1007.0",
     "@buape/carbon": "0.0.0-beta-20260216184201",
     "@clack/prompts": "^1.1.0",
@@ -1188,6 +1191,7 @@
     "@mariozechner/pi-ai": "0.57.1",
     "@mariozechner/pi-coding-agent": "0.57.1",
     "@mariozechner/pi-tui": "0.57.1",
+    "@modelcontextprotocol/sdk": "1.28.0",
     "@mozilla/readability": "^0.6.0",
     "@sinclair/typebox": "0.34.48",
     "@slack/bolt": "^4.6.0",
@@ -1239,6 +1243,9 @@
     "@types/ws": "^8.18.1",
     "@typescript/native-preview": "7.0.0-dev.20260311.1",
     "@vitest/coverage-v8": "^4.0.18",
+    "concurrently": "^9.2.1",
+    "electron": "^41.2.0",
+    "electron-builder": "^26.8.1",
     "jscpd": "4.0.8",
     "lit": "^3.3.2",
     "oxfmt": "0.38.0",
@@ -1248,6 +1255,7 @@
     "tsdown": "0.21.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "vite": "8.0.3",
     "vitest": "^4.0.18"
   },
   "peerDependencies": {
@@ -1276,6 +1284,7 @@
       "tough-cookie": "4.1.3"
     },
     "onlyBuiltDependencies": [
+      "electron",
       "@lydell/node-pty",
       "@matrix-org/matrix-sdk-crypto-nodejs",
       "@napi-rs/canvas",
