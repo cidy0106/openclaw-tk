@@ -1,11 +1,29 @@
 import path from "node:path";
 import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { GatewayProcess } from "./gateway-process";
 
 let mainWindow: BrowserWindow | null = null;
 
 const isDev = !app.isPackaged;
+const gateway = new GatewayProcess();
 
-function createWindow(): void {
+// Forward gateway logs to the console.
+gateway.on("log", (stream: string, data: string) => {
+  const line = data.trimEnd();
+  if (stream === "stderr") {
+    console.error(`[gateway] ${line}`);
+  } else {
+    console.log(`[gateway] ${line}`);
+  }
+});
+
+gateway.on("status", (status: string) => {
+  console.log(`[gateway] status → ${status}`);
+  // Notify renderer if window exists.
+  mainWindow?.webContents.send("freeclaw:gateway:statusChanged", status);
+});
+
+function createWindow(gatewayPort: number): void {
   const preloadPath = path.join(__dirname, "preload.cjs");
 
   mainWindow = new BrowserWindow({
@@ -30,11 +48,15 @@ function createWindow(): void {
 
   if (isDev) {
     const devUrl = process.env.VITE_DEV_SERVER_URL ?? "http://localhost:5173";
-    void mainWindow.loadURL(devUrl);
+    const url = new URL(devUrl);
+    url.searchParams.set("gatewayPort", String(gatewayPort));
+    void mainWindow.loadURL(url.toString());
     mainWindow.webContents.openDevTools({ mode: "detach" });
   } else {
     const indexPath = path.join(__dirname, "..", "control-ui", "index.html");
-    void mainWindow.loadFile(indexPath);
+    void mainWindow.loadFile(indexPath, {
+      query: { gatewayPort: String(gatewayPort) },
+    });
   }
 
   mainWindow.on("closed", () => {
@@ -48,10 +70,15 @@ function createWindow(): void {
 ipcMain.handle("freeclaw:app:getVersion", () => app.getVersion());
 ipcMain.handle("freeclaw:app:openExternal", (_event, url: string) => shell.openExternal(url));
 
-// gateway.* (stubs — real implementation comes in later tasks)
-ipcMain.handle("freeclaw:gateway:getPort", () => 3000);
-ipcMain.handle("freeclaw:gateway:restart", () => {});
-ipcMain.handle("freeclaw:gateway:status", () => "stopped" as const);
+// gateway.*
+ipcMain.handle("freeclaw:gateway:getPort", () => gateway.port);
+ipcMain.handle("freeclaw:gateway:status", () => gateway.status);
+ipcMain.handle("freeclaw:gateway:restart", async () => {
+  const newPort = await gateway.restart();
+  // Inform the renderer about the new port.
+  mainWindow?.webContents.send("freeclaw:gateway:portChanged", newPort);
+  return newPort;
+});
 
 // platform.* (stubs — real implementation comes in later tasks)
 ipcMain.handle("freeclaw:platform:list", () => []);
@@ -64,14 +91,31 @@ ipcMain.handle("freeclaw:platform:status", () => ({}));
 
 // ── App lifecycle ─────────────────────────────────────────────────────
 
-void app.whenReady().then(() => {
-  createWindow();
+void app.whenReady().then(async () => {
+  let port: number;
+  try {
+    port = await gateway.start();
+    console.log(`[main] Gateway started on port ${port}`);
+  } catch (err) {
+    console.error("[main] Failed to start gateway:", err);
+    // Still open the window so the user can see something.
+    port = 0;
+  }
+
+  createWindow(port);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      createWindow(gateway.port);
     }
   });
+});
+
+app.on("before-quit", () => {
+  console.log("[main] Stopping gateway before quit...");
+  // Fire-and-forget; the process will be killed regardless on app exit
+  // since detached: false. But we try a clean shutdown.
+  void gateway.stop();
 });
 
 app.on("window-all-closed", () => {
