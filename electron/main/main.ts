@@ -1,5 +1,5 @@
 import path from "node:path";
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, globalShortcut, ipcMain, shell } from "electron";
 import {
   saveCredential,
   removeCredential,
@@ -197,6 +197,20 @@ void app.whenReady().then(async () => {
     },
   });
 
+  // ── Global shortcut: CommandOrControl+Shift+F — show/focus FreeClaw ──
+  globalShortcut.register("CommandOrControl+Shift+F", () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.focus();
+      } else {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    } else {
+      createWindow(gateway.port);
+    }
+  });
+
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow(gateway.port);
@@ -210,6 +224,10 @@ app.on("before-quit", () => {
   // Fire-and-forget; the process will be killed regardless on app exit
   // since detached: false. But we try a clean shutdown.
   void gateway.stop();
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
 });
 
 app.on("window-all-closed", () => {
