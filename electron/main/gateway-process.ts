@@ -51,16 +51,23 @@ export class GatewayProcess extends EventEmitter {
 
     // __dirname is the built output dir (dist/electron). Go up two levels to project root.
     const projectRoot = path.resolve(__dirname, "..", "..");
+
+    // Use the project's own state directory, NOT the system ~/.openclaw/.
+    // This ensures we connect to the zero-token gateway with its own providers/config.
+    const stateDir = path.resolve(projectRoot, ".openclaw-upstream-state");
+    const configPath = path.resolve(stateDir, "openclaw.json");
     const entryPath = path.resolve(projectRoot, "dist", "entry.js");
 
-    // Read the gateway token from the existing config, or generate one.
-    this._token = readGatewayTokenFromConfig() || crypto.randomBytes(16).toString("hex");
+    // Read the gateway token from the project config, or generate one.
+    this._token = readGatewayTokenFromConfig(configPath) || crypto.randomBytes(16).toString("hex");
 
     const child = spawn("node", [entryPath, "gateway", "--port", String(this._port)], {
       stdio: ["ignore", "pipe", "pipe"],
       detached: false,
       env: {
         ...process.env,
+        OPENCLAW_CONFIG_PATH: configPath,
+        OPENCLAW_STATE_DIR: stateDir,
         OPENCLAW_GATEWAY_PORT: String(this._port),
         OPENCLAW_GATEWAY_TOKEN: this._token,
       },
@@ -203,22 +210,22 @@ export class GatewayProcess extends EventEmitter {
  * Finds an available TCP port by binding to port 0.
  */
 /**
- * Try to read the gateway auth token from the existing openclaw config file.
- * The config is JSON5 at ~/.openclaw/openclaw.json with a gateway.auth.token field.
+ * Try to read the gateway auth token from the given config file.
+ * Falls back to standard locations if not found.
  */
-function readGatewayTokenFromConfig(): string | undefined {
+function readGatewayTokenFromConfig(primaryConfig?: string): string | undefined {
   const candidates = [
+    primaryConfig,
     process.env.OPENCLAW_CONFIG_PATH,
     path.join(os.homedir(), ".openclaw", "openclaw.json"),
-    path.join(os.homedir(), ".config", "openclaw", "openclaw.json"),
   ].filter(Boolean) as string[];
 
-  for (const configPath of candidates) {
+  for (const cfgPath of candidates) {
     try {
-      if (!fs.existsSync(configPath)) {
+      if (!fs.existsSync(cfgPath)) {
         continue;
       }
-      const raw = fs.readFileSync(configPath, "utf-8");
+      const raw = fs.readFileSync(cfgPath, "utf-8");
       // Simple regex extraction — avoid pulling in a JSON5 parser just for this
       const match = raw.match(/"token"\s*:\s*"([a-f0-9]+)"/);
       if (match?.[1]) {
