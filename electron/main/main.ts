@@ -8,6 +8,8 @@ import {
 import { openLoginWindow, clearPlatformSession } from "../platform-login/login-window";
 import { PLATFORMS, getPlatform } from "../platform-login/platforms";
 import { GatewayProcess } from "./gateway-process";
+import { createAppMenu } from "./menu";
+import { createTray, destroyTray } from "./tray";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -151,6 +153,25 @@ void app.whenReady().then(async () => {
 
   createWindow(port);
 
+  createAppMenu(mainWindow);
+
+  createTray({
+    onShow: () => {
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+      } else {
+        createWindow(gateway.port);
+      }
+    },
+    onQuit: () => {
+      app.quit();
+    },
+    getStatus: () => {
+      return gateway.status === "running" ? "已连接" : "未连接";
+    },
+  });
+
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow(gateway.port);
@@ -160,6 +181,7 @@ void app.whenReady().then(async () => {
 
 app.on("before-quit", () => {
   console.log("[main] Stopping gateway before quit...");
+  destroyTray();
   // Fire-and-forget; the process will be killed regardless on app exit
   // since detached: false. But we try a clean shutdown.
   void gateway.stop();
