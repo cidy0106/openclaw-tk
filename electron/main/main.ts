@@ -14,7 +14,8 @@ import { loadWindowState, saveWindowState, applyWindowState } from "./window-man
 
 let mainWindow: BrowserWindow | null = null;
 
-const isDev = !app.isPackaged;
+const isE2E = process.env.ELECTRON_IS_E2E === "1";
+const isDev = !app.isPackaged && !isE2E;
 const gateway = new GatewayProcess();
 
 // Forward gateway logs to the console.

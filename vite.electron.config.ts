@@ -7,17 +7,23 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 const external = ["electron", ...builtinModules, ...builtinModules.map((m) => `node:${m}`)];
 
+// Determine which entry to build based on ELECTRON_BUILD_TARGET env var.
+// When not set, build main (default). Use the electron:build script to build both.
+const target = process.env.ELECTRON_BUILD_TARGET ?? "main";
+
+const entries: Record<string, Record<string, string>> = {
+  main: { main: path.resolve(here, "electron/main/main.ts") },
+  preload: { preload: path.resolve(here, "electron/preload/preload.ts") },
+};
+
 export default defineConfig({
   publicDir: false,
   build: {
     outDir: path.resolve(here, "dist/electron"),
-    emptyOutDir: true,
+    emptyOutDir: target === "main",
     sourcemap: true,
     lib: {
-      entry: {
-        main: path.resolve(here, "electron/main/main.ts"),
-        preload: path.resolve(here, "electron/preload/preload.ts"),
-      },
+      entry: entries[target],
       formats: ["cjs"],
     },
     rollupOptions: {
