@@ -8,26 +8,18 @@ export function createTray(callbacks: {
   onQuit: () => void;
   getStatus: () => string;
 }): Tray {
-  // Try to load the tray icon from assets
-  const iconPath = path.join(
-    app.isPackaged ? path.dirname(process.execPath) : path.join(__dirname, "..", ".."),
-    "assets",
-    "tray-icon.png",
-  );
+  // Load the tray icon — use @2x for Retina displays
+  const assetsDir = app.isPackaged
+    ? path.join(process.resourcesPath, "assets")
+    : path.join(__dirname, "..", "..", "assets");
 
-  let icon = nativeImage.createFromPath(iconPath);
-
-  // Fallback to an empty 16x16 image if file not found
+  let icon = nativeImage.createFromPath(path.join(assetsDir, "tray-icon.png"));
   if (icon.isEmpty()) {
     icon = nativeImage.createEmpty();
   } else {
-    // Resize for macOS template image (16x16)
-    icon = icon.resize({ width: 16, height: 16 });
+    icon = icon.resize({ width: 18, height: 18 });
   }
-
-  if (process.platform === "darwin") {
-    icon.setTemplateImage(true);
-  }
+  // Do NOT set as template image — we want to keep the red color
 
   tray = new Tray(icon);
   tray.setToolTip("FreeClaw");

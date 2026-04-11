@@ -1,5 +1,5 @@
 import path from "node:path";
-import { app, BrowserWindow, globalShortcut, ipcMain, shell } from "electron";
+import { app, BrowserWindow, globalShortcut, ipcMain, nativeImage, shell } from "electron";
 import {
   init as initCredentialStore,
   saveCredential,
@@ -47,7 +47,14 @@ function createWindow(gatewayPort: number): void {
   const preloadPath = path.join(__dirname, "preload.cjs");
   const windowState = loadWindowState();
 
+  // Load app icon
+  const assetsDir = app.isPackaged
+    ? path.join(process.resourcesPath, "assets")
+    : path.join(__dirname, "..", "..", "assets");
+  const appIcon = nativeImage.createFromPath(path.join(assetsDir, "icon.png"));
+
   mainWindow = new BrowserWindow({
+    icon: appIcon.isEmpty() ? undefined : appIcon,
     x: windowState.x,
     y: windowState.y,
     width: windowState.width,
@@ -87,6 +94,7 @@ function createWindow(gatewayPort: number): void {
 
   mainWindow.once("ready-to-show", () => {
     mainWindow?.show();
+    mainWindow?.setTitle("FreeClaw");
   });
 
   if (isDev) {
