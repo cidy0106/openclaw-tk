@@ -376,4 +376,7 @@ export type AppViewState = {
     handleOpenSidebar: (content: string) => void;
     handleCloseSidebar: () => void;
     handleSplitRatioChange: (ratio: number) => void;
+    platformManagerOpen: boolean;
+    openPlatformManager: () => void;
+    closePlatformManager: () => void;
   };

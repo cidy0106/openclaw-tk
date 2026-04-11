@@ -414,6 +414,8 @@ export class OpenClawApp extends LitElement {
   @state() skillMessages: Record<string, SkillMessage> = {};
   @state() skillsDetailKey: string | null = null;
 
+  @state() platformManagerOpen = false;
+
   @state() healthLoading = false;
   @state() healthResult: HealthSummary | null = null;
   @state() healthError: string | null = null;
@@ -755,6 +757,14 @@ export class OpenClawApp extends LitElement {
     const newRatio = Math.max(0.4, Math.min(0.7, ratio));
     this.splitRatio = newRatio;
     this.applySettings({ ...this.settings, splitRatio: newRatio });
+  }
+
+  openPlatformManager() {
+    this.platformManagerOpen = true;
+  }
+
+  closePlatformManager() {
+    this.platformManagerOpen = false;
   }
 
   render() {
