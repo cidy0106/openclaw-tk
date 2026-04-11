@@ -72,6 +72,16 @@ function formatHostWithPort(hostname: string, port: string): string {
 }
 
 function deriveDefaultGatewayUrl(): { pageUrl: string; effectiveUrl: string } {
+  // Electron desktop app: read gateway port from URL query parameter
+  if (typeof location !== "undefined" && location.protocol === "file:") {
+    const params = new URLSearchParams(location.search);
+    const gatewayPort = params.get("gatewayPort");
+    if (gatewayPort) {
+      const url = `ws://127.0.0.1:${gatewayPort}`;
+      return { pageUrl: url, effectiveUrl: url };
+    }
+  }
+
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const configured =
     typeof window !== "undefined" &&

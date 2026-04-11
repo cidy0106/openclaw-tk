@@ -14,8 +14,16 @@ import { loadWindowState, saveWindowState, applyWindowState } from "./window-man
 
 let mainWindow: BrowserWindow | null = null;
 
+import fs from "node:fs";
+
 const isE2E = process.env.ELECTRON_IS_E2E === "1";
-const isDev = !app.isPackaged && !isE2E;
+
+// Detect dev mode: check if built UI exists. If not, use Vite dev server.
+// We can't rely on app.isPackaged because `npx electron main.cjs` is always "not packaged".
+const builtUiPath = path.join(__dirname, "..", "control-ui", "index.html");
+const hasBuiltUi = fs.existsSync(builtUiPath);
+const isDev = !hasBuiltUi && !isE2E;
+
 const gateway = new GatewayProcess();
 
 // Forward gateway logs to the console.
@@ -81,16 +89,17 @@ function createWindow(gatewayPort: number): void {
   });
 
   if (isDev) {
+    // Dev mode: Vite dev server must be running (pnpm ui:dev)
     const devUrl = process.env.VITE_DEV_SERVER_URL ?? "http://localhost:5173";
     const url = new URL(devUrl);
     url.searchParams.set("gatewayPort", String(gatewayPort));
     void mainWindow.loadURL(url.toString());
     mainWindow.webContents.openDevTools({ mode: "detach" });
   } else {
-    const indexPath = path.join(__dirname, "..", "control-ui", "index.html");
-    void mainWindow.loadFile(indexPath, {
-      query: { gatewayPort: String(gatewayPort) },
-    });
+    // Production: load UI served by the gateway itself.
+    // This ensures the WebSocket origin matches and is allowed by the gateway.
+    // Pass the gateway token so the UI auto-authenticates.
+    void mainWindow.loadURL(`http://127.0.0.1:${gatewayPort}?token=${gateway.token}`);
   }
 
   mainWindow.on("closed", () => {

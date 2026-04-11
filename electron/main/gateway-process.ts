@@ -1,7 +1,10 @@
 import { ChildProcess, spawn } from "node:child_process";
+import crypto from "node:crypto";
 import { EventEmitter } from "node:events";
+import fs from "node:fs";
 import http from "node:http";
 import net from "node:net";
+import os from "node:os";
 import path from "node:path";
 export type GatewayStatus = "stopped" | "starting" | "running" | "error";
 
@@ -17,6 +20,7 @@ export interface GatewayProcessEvents {
 export class GatewayProcess extends EventEmitter {
   private _status: GatewayStatus = "stopped";
   private _port = 0;
+  private _token = "";
   private _child: ChildProcess | null = null;
   private _healthTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -28,6 +32,10 @@ export class GatewayProcess extends EventEmitter {
 
   get port(): number {
     return this._port;
+  }
+
+  get token(): string {
+    return this._token;
   }
 
   // ── Lifecycle ────────────────────────────────────────────────────────
@@ -45,13 +53,16 @@ export class GatewayProcess extends EventEmitter {
     const projectRoot = path.resolve(__dirname, "..", "..");
     const entryPath = path.resolve(projectRoot, "dist", "entry.js");
 
+    // Read the gateway token from the existing config, or generate one.
+    this._token = readGatewayTokenFromConfig() || crypto.randomBytes(16).toString("hex");
+
     const child = spawn("node", [entryPath, "gateway", "--port", String(this._port)], {
       stdio: ["ignore", "pipe", "pipe"],
       detached: false,
       env: {
         ...process.env,
         OPENCLAW_GATEWAY_PORT: String(this._port),
-        OPENCLAW_CONTROL_UI_ENABLED: "false",
+        OPENCLAW_GATEWAY_TOKEN: this._token,
       },
     });
 
@@ -191,6 +202,35 @@ export class GatewayProcess extends EventEmitter {
 /**
  * Finds an available TCP port by binding to port 0.
  */
+/**
+ * Try to read the gateway auth token from the existing openclaw config file.
+ * The config is JSON5 at ~/.openclaw/openclaw.json with a gateway.auth.token field.
+ */
+function readGatewayTokenFromConfig(): string | undefined {
+  const candidates = [
+    process.env.OPENCLAW_CONFIG_PATH,
+    path.join(os.homedir(), ".openclaw", "openclaw.json"),
+    path.join(os.homedir(), ".config", "openclaw", "openclaw.json"),
+  ].filter(Boolean) as string[];
+
+  for (const configPath of candidates) {
+    try {
+      if (!fs.existsSync(configPath)) {
+        continue;
+      }
+      const raw = fs.readFileSync(configPath, "utf-8");
+      // Simple regex extraction — avoid pulling in a JSON5 parser just for this
+      const match = raw.match(/"token"\s*:\s*"([a-f0-9]+)"/);
+      if (match?.[1]) {
+        return match[1];
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+  return undefined;
+}
+
 function findFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const srv = net.createServer();
