@@ -102,7 +102,11 @@ function createWindow(gatewayPort: number): void {
 
 // app.*
 ipcMain.handle("freeclaw:app:getVersion", () => app.getVersion());
-ipcMain.handle("freeclaw:app:openExternal", (_event, url: string) => shell.openExternal(url));
+ipcMain.handle("freeclaw:app:openExternal", (_event, url: string) => {
+  if (typeof url === "string" && /^https?:\/\//i.test(url)) {
+    return shell.openExternal(url);
+  }
+});
 
 // gateway.*
 ipcMain.handle("freeclaw:gateway:getPort", () => gateway.port);
@@ -120,6 +124,8 @@ ipcMain.handle("freeclaw:platform:list", () =>
     id: p.id,
     name: p.name,
     icon: p.icon,
+    models: p.models,
+    providerId: p.providerId,
     connected: hasCredential(p.id),
   })),
 );
