@@ -1,5 +1,12 @@
 import path from "node:path";
 import { app, BrowserWindow, ipcMain, shell } from "electron";
+import {
+  saveCredential,
+  removeCredential,
+  hasCredential,
+} from "../platform-login/credential-store";
+import { openLoginWindow, clearPlatformSession } from "../platform-login/login-window";
+import { PLATFORMS, getPlatform } from "../platform-login/platforms";
 import { GatewayProcess } from "./gateway-process";
 
 let mainWindow: BrowserWindow | null = null;
@@ -80,14 +87,54 @@ ipcMain.handle("freeclaw:gateway:restart", async () => {
   return newPort;
 });
 
-// platform.* (stubs — real implementation comes in later tasks)
-ipcMain.handle("freeclaw:platform:list", () => []);
-ipcMain.handle("freeclaw:platform:login", () => ({
-  ok: false,
-  error: "not implemented",
-}));
-ipcMain.handle("freeclaw:platform:logout", () => {});
-ipcMain.handle("freeclaw:platform:status", () => ({}));
+// platform.*
+ipcMain.handle("freeclaw:platform:list", () =>
+  PLATFORMS.map((p) => ({
+    id: p.id,
+    name: p.name,
+    icon: p.icon,
+    connected: hasCredential(p.id),
+  })),
+);
+
+ipcMain.handle("freeclaw:platform:login", async (_event, platformId: string) => {
+  if (!mainWindow) {
+    return { ok: false, error: "No main window" };
+  }
+  const platform = getPlatform(platformId);
+  if (!platform) {
+    return { ok: false, error: `Unknown platform: ${platformId}` };
+  }
+
+  const result = await openLoginWindow(platformId, mainWindow);
+  if (result.ok && result.credentials) {
+    saveCredential(platformId, result.credentials);
+    // Notify renderer of updated status.
+    broadcastPlatformStatus();
+  }
+  return { ok: result.ok, error: result.error };
+});
+
+ipcMain.handle("freeclaw:platform:logout", async (_event, platformId: string) => {
+  removeCredential(platformId);
+  await clearPlatformSession(platformId);
+  broadcastPlatformStatus();
+});
+
+ipcMain.handle("freeclaw:platform:status", () => buildPlatformStatus());
+
+function buildPlatformStatus(): Record<string, { connected: boolean }> {
+  const status: Record<string, { connected: boolean }> = {};
+  for (const p of PLATFORMS) {
+    status[p.id] = { connected: hasCredential(p.id) };
+  }
+  return status;
+}
+
+function broadcastPlatformStatus(): void {
+  const status = buildPlatformStatus();
+  mainWindow?.webContents.send("freeclaw:platform:statusChange", status);
+}
 
 // ── App lifecycle ─────────────────────────────────────────────────────
 
