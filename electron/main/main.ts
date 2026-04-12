@@ -74,8 +74,7 @@ function createWindow(gatewayPort: number): void {
     minWidth: 800,
     minHeight: 600,
     titleBarStyle: "hiddenInset",
-    backgroundColor: "#0f0f1a",
-    show: false,
+    backgroundColor: "#fafafa",
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -104,10 +103,7 @@ function createWindow(gatewayPort: number): void {
   mainWindow.on("maximize", debouncedSave);
   mainWindow.on("unmaximize", debouncedSave);
 
-  mainWindow.once("ready-to-show", () => {
-    mainWindow?.show();
-    mainWindow?.setTitle("FreeClaw");
-  });
+  mainWindow.setTitle("FreeClaw");
 
   if (isDev) {
     // Dev mode: Vite dev server must be running (pnpm ui:dev)

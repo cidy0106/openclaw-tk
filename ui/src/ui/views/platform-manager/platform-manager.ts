@@ -172,8 +172,8 @@ export class PlatformManager extends LitElement {
     }
 
     .modal {
-      background: var(--oc-surface, #fff);
-      border: 1px solid var(--oc-border, #e5e5e5);
+      background: var(--bg-elevated, var(--bg, #fff));
+      border: 1px solid var(--border, #e5e5e5);
       border-radius: 16px;
       width: 90vw;
       max-width: 720px;
@@ -212,19 +212,19 @@ export class PlatformManager extends LitElement {
     .title {
       font-size: 20px;
       font-weight: 700;
-      color: var(--oc-text, #1a1a1a);
+      color: var(--text-strong, var(--text, #1a1a1a));
     }
 
     .subtitle {
       font-size: 13px;
-      color: var(--oc-text-secondary, #888);
+      color: var(--text-soft, #888);
       margin-top: 4px;
     }
 
     .close-btn {
       background: none;
       border: none;
-      color: var(--oc-text-secondary, #999);
+      color: var(--text-soft, #999);
       font-size: 20px;
       cursor: pointer;
       padding: 4px 8px;
@@ -237,13 +237,13 @@ export class PlatformManager extends LitElement {
 
     .close-btn:hover {
       background: rgba(0, 0, 0, 0.05);
-      color: var(--oc-text, #333);
+      color: var(--text-strong, #333);
     }
 
     .progress-bar {
       width: 100%;
       height: 4px;
-      background: var(--oc-border, #eee);
+      background: var(--border, #eee);
       border-radius: 2px;
       margin-bottom: 20px;
       overflow: hidden;
@@ -265,7 +265,7 @@ export class PlatformManager extends LitElement {
     .empty {
       text-align: center;
       padding: 40px 20px;
-      color: var(--oc-text-secondary, #888);
+      color: var(--text-soft, #888);
       font-size: 14px;
     }
   `;
