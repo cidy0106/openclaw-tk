@@ -193,6 +193,15 @@ function broadcastPlatformStatus(): void {
 // ── App lifecycle ─────────────────────────────────────────────────────
 
 void app.whenReady().then(async () => {
+  // Set Dock icon on macOS
+  const assetsDir = app.isPackaged
+    ? path.join(process.resourcesPath, "assets")
+    : path.join(__dirname, "..", "..", "assets");
+  const dockIcon = nativeImage.createFromPath(path.join(assetsDir, "icon.png"));
+  if (process.platform === "darwin" && !dockIcon.isEmpty()) {
+    app.dock.setIcon(dockIcon);
+  }
+
   // Initialize credential store to write directly to gateway's auth-profiles.json
   initCredentialStore(gateway.stateDir);
 

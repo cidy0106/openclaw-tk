@@ -1,15 +1,27 @@
+$schema: https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json
 appId: com.freeclaw.desktop
 productName: FreeClaw
 copyright: Copyright © 2026 FreeClaw Contributors
-
-directories:
-  output: release
-  buildResources: assets
+asar: true
 
 files:
-  - dist/electron/**/*
-  - dist/control-ui/**/*
-  - "!node_modules"
+  - dist/**/*
+  - node_modules/**/*
+  - package.json
+  - openclaw.mjs
+  - "!node_modules/.cache"
+  - "!node_modules/@playwright"
+  - "!node_modules/playwright*"
+  - "!node_modules/electron"
+  - "!**/*.map"
+  - "!**/*.test.*"
+  - "!**/*.spec.*"
+
+extraResources:
+  - from: assets
+    to: assets
+    filter:
+      - "**/*"
 
 mac:
   category: public.app-category.developer-tools
@@ -18,12 +30,10 @@ mac:
     - target: dmg
       arch:
         - arm64
-        - x64
   darkModeSupport: true
 
 dmg:
-  title: "FreeClaw ${version}"
-  background: assets/dmg-background.png
+  title: FreeClaw
   contents:
     - x: 130
       y: 220
@@ -31,5 +41,3 @@ dmg:
       y: 220
       type: link
       path: /Applications
-
-asar: true
