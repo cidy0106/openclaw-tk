@@ -4,26 +4,18 @@ productName: FreeClaw
 copyright: Copyright © 2026 FreeClaw Contributors
 asar: true
 asarUnpack:
-  - dist/entry.js
-  - dist/index.js
-  - dist/**/*.js
-  - node_modules/**/*
-  - openclaw.mjs
-  - extensions/**/*
-  - skills/**/*
+  - dist/gateway-bundle.mjs
+  - dist/skia.darwin-arm64-*.node
+  - dist/node_modules/**/*
 
 files:
-  - dist/**/*
-  - node_modules/**/*
+  - dist/electron/**/*
+  - dist/control-ui/**/*
+  - dist/gateway-bundle.mjs
+  - dist/gateway-bundle.mjs.map
+  - dist/skia.darwin-arm64-*.node
+  - dist/node_modules/**/*
   - package.json
-  - openclaw.mjs
-  - "!node_modules/.cache"
-  - "!node_modules/@playwright"
-  - "!node_modules/playwright*"
-  - "!node_modules/electron"
-  - "!**/*.map"
-  - "!**/*.test.*"
-  - "!**/*.spec.*"
 
 extraResources:
   - from: assets

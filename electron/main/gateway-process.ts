@@ -66,7 +66,11 @@ export class GatewayProcess extends EventEmitter {
     this._port = await findFreePort();
 
     const configPath = path.resolve(this._stateDir, "openclaw.json");
-    const entryPath = path.resolve(this._projectRoot, "dist", "entry.js");
+    // Use the single-file gateway bundle if available (much smaller), fallback to entry.js
+    const bundlePath = path.resolve(this._projectRoot, "dist", "gateway-bundle.mjs");
+    const entryPath = fs.existsSync(bundlePath)
+      ? bundlePath
+      : path.resolve(this._projectRoot, "dist", "entry.js");
 
     // Ensure state directory exists (new user won't have one yet)
     if (!fs.existsSync(this._stateDir)) {
