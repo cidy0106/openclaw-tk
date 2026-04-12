@@ -2,20 +2,59 @@ $schema: https://raw.githubusercontent.com/electron-userland/electron-builder/ma
 appId: com.freeclaw.desktop
 productName: FreeClaw
 copyright: Copyright © 2026 FreeClaw Contributors
-asar: true
-asarUnpack:
-  - dist/gateway-bundle.mjs
-  - dist/skia.darwin-arm64-*.node
-  - dist/node_modules/**/*
+asar: false
 
 files:
   - dist/electron/**/*
   - dist/control-ui/**/*
-  - dist/gateway-bundle.mjs
-  - dist/gateway-bundle.mjs.map
-  - dist/skia.darwin-arm64-*.node
-  - dist/node_modules/**/*
+  - dist/*.js
+  - dist/*.mjs
+  - dist/entry.js
+  - dist/bundled/**/*
+  - dist/extensions/**/*
+  - dist/plugins/**/*
+  - dist/canvas-host/**/*
+  - dist/export-html/**/*
+  - dist/telegram/**/*
+  - node_modules/**/*
   - package.json
+  - openclaw.mjs
+  # Exclude large unnecessary packages
+  - "!node_modules/electron"
+  - "!node_modules/electron-builder"
+  - "!node_modules/@electron/**"
+  - "!node_modules/@playwright/**"
+  - "!node_modules/playwright*"
+  - "!node_modules/pdfjs-dist"
+  - "!node_modules/node-llama-cpp"
+  - "!node_modules/typescript"
+  - "!node_modules/.cache"
+  - "!node_modules/esbuild"
+  - "!node_modules/@esbuild"
+  - "!node_modules/oxfmt"
+  - "!node_modules/@oxc-parser"
+  - "!node_modules/@biomejs"
+  - "!node_modules/vite"
+  - "!node_modules/@vitejs"
+  - "!node_modules/vitest"
+  - "!node_modules/@vitest"
+  - "!node_modules/rolldown"
+  - "!node_modules/@rolldown"
+  - "!node_modules/tsdown"
+  - "!node_modules/concurrently"
+  - "!**/*.map"
+  - "!**/*.d.ts"
+  - "!**/*.test.*"
+  - "!**/*.spec.*"
+  - "!**/test/**"
+  - "!**/tests/**"
+  - "!**/docs/**"
+  - "!**/example*/**"
+  - "!**/CHANGELOG*"
+  - "!**/README*"
+  - "!**/LICENSE*"
+  - "!dist/mac-arm64"
+  - "!dist/plugin-sdk"
 
 extraResources:
   - from: assets
