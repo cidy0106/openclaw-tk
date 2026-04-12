@@ -9,6 +9,7 @@ export class DashboardHeader extends LitElement {
   }
 
   @property() tab: Tab = "overview";
+  @property() assistantName = "FreeClaw";
 
   override render() {
     const label = titleForTab(this.tab);
@@ -23,7 +24,7 @@ export class DashboardHeader extends LitElement {
                 new CustomEvent("navigate", { detail: "overview", bubbles: true, composed: true }),
               )}
           >
-            OpenClaw
+            ${this.assistantName || "FreeClaw"}
           </span>
           <span class="dashboard-header__breadcrumb-sep">›</span>
           <span class="dashboard-header__breadcrumb-current">${label}</span>

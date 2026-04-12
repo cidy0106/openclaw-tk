@@ -444,7 +444,7 @@ export function renderApp(state: AppViewState) {
             <span class="nav-collapse-toggle__icon" aria-hidden="true">${icons.menu}</span>
           </button>
           <div class="topnav-shell__content">
-            <dashboard-header .tab=${state.tab}></dashboard-header>
+            <dashboard-header .tab=${state.tab} .assistantName=${state.assistantName || "FreeClaw"}></dashboard-header>
           </div>
           <div class="topnav-shell__actions">
             <button
@@ -477,11 +477,11 @@ export function renderApp(state: AppViewState) {
                       <img
                         class="sidebar-brand__logo"
                         src="${agentLogoUrl(basePath)}"
-                        alt="OpenClaw"
+                        alt="${state.assistantName || "FreeClaw"}"
                       />
                       <span class="sidebar-brand__copy">
                         <span class="sidebar-brand__eyebrow">${t("nav.control")}</span>
-                        <span class="sidebar-brand__title">OpenClaw</span>
+                        <span class="sidebar-brand__title">${state.assistantName || "FreeClaw"}</span>
                       </span>
                     `
                 }

@@ -159,8 +159,8 @@ export class PlatformManager extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(6px);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease;
@@ -172,8 +172,8 @@ export class PlatformManager extends LitElement {
     }
 
     .modal {
-      background: #13131f;
-      border: 1px solid #2a2a4a;
+      background: var(--oc-surface, #fff);
+      border: 1px solid var(--oc-border, #e5e5e5);
       border-radius: 16px;
       width: 90vw;
       max-width: 720px;
@@ -182,14 +182,13 @@ export class PlatformManager extends LitElement {
       padding: 28px;
       transform: translateY(20px);
       transition: transform 0.2s ease;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
     .overlay.open .modal {
       transform: translateY(0);
     }
 
-    /* Scrollbar styling */
     .modal::-webkit-scrollbar {
       width: 6px;
     }
@@ -199,7 +198,7 @@ export class PlatformManager extends LitElement {
     }
 
     .modal::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
       border-radius: 3px;
     }
 
@@ -213,19 +212,19 @@ export class PlatformManager extends LitElement {
     .title {
       font-size: 20px;
       font-weight: 700;
-      color: #fff;
+      color: var(--oc-text, #1a1a1a);
     }
 
     .subtitle {
       font-size: 13px;
-      color: #888;
+      color: var(--oc-text-secondary, #888);
       margin-top: 4px;
     }
 
     .close-btn {
       background: none;
       border: none;
-      color: #888;
+      color: var(--oc-text-secondary, #999);
       font-size: 20px;
       cursor: pointer;
       padding: 4px 8px;
@@ -237,14 +236,14 @@ export class PlatformManager extends LitElement {
     }
 
     .close-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #fff;
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--oc-text, #333);
     }
 
     .progress-bar {
       width: 100%;
       height: 4px;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--oc-border, #eee);
       border-radius: 2px;
       margin-bottom: 20px;
       overflow: hidden;
@@ -252,7 +251,7 @@ export class PlatformManager extends LitElement {
 
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      background: linear-gradient(90deg, #e74c3c, #c0392b);
       border-radius: 2px;
       transition: width 0.4s ease;
     }
@@ -266,7 +265,7 @@ export class PlatformManager extends LitElement {
     .empty {
       text-align: center;
       padding: 40px 20px;
-      color: #888;
+      color: var(--oc-text-secondary, #888);
       font-size: 14px;
     }
   `;

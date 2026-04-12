@@ -18,8 +18,8 @@ export class PlatformCard extends LitElement {
     }
 
     .card {
-      background: #1a1a30;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: var(--oc-surface, #fff);
+      border: 1px solid var(--oc-border, #e8e8e8);
       border-radius: 12px;
       padding: 16px;
       cursor: default;
@@ -28,23 +28,23 @@ export class PlatformCard extends LitElement {
         box-shadow 0.2s ease,
         opacity 0.2s ease,
         border-color 0.2s ease;
-      opacity: 0.65;
+      opacity: 0.7;
       position: relative;
     }
 
     .card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       opacity: 1;
     }
 
     .card.connected {
-      border-color: rgba(34, 197, 94, 0.3);
+      border-color: rgba(34, 197, 94, 0.4);
       opacity: 1;
     }
 
     .card.connected:hover {
-      border-color: rgba(34, 197, 94, 0.5);
+      border-color: rgba(34, 197, 94, 0.6);
     }
 
     .icon {
@@ -56,7 +56,7 @@ export class PlatformCard extends LitElement {
     .name {
       font-size: 13px;
       font-weight: 600;
-      color: #fff;
+      color: var(--oc-text, #1a1a1a);
       margin-bottom: 6px;
       white-space: nowrap;
       overflow: hidden;
@@ -107,12 +107,12 @@ export class PlatformCard extends LitElement {
     }
 
     .btn-connect {
-      background: rgba(99, 102, 241, 0.15);
-      color: #818cf8;
+      background: rgba(231, 76, 60, 0.08);
+      color: #e74c3c;
     }
 
     .btn-connect:hover:not(:disabled) {
-      background: rgba(99, 102, 241, 0.25);
+      background: rgba(231, 76, 60, 0.15);
     }
 
     .btn-disconnect {
@@ -130,16 +130,16 @@ export class PlatformCard extends LitElement {
       bottom: calc(100% + 8px);
       left: 50%;
       transform: translateX(-50%);
-      background: #2a2a4a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--oc-surface, #fff);
+      border: 1px solid var(--oc-border, #e5e5e5);
       border-radius: 8px;
       padding: 8px 12px;
       font-size: 11px;
-      color: #ccc;
+      color: var(--oc-text-secondary, #666);
       white-space: nowrap;
       z-index: 10;
       pointer-events: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
     .card:hover .tooltip {
@@ -147,14 +147,14 @@ export class PlatformCard extends LitElement {
     }
 
     .tooltip-title {
-      color: #fff;
+      color: var(--oc-text, #333);
       font-weight: 600;
       margin-bottom: 4px;
       font-size: 11px;
     }
 
     .tooltip-model {
-      color: #aaa;
+      color: var(--oc-text-secondary, #888);
       font-size: 10px;
       line-height: 1.5;
     }
@@ -163,8 +163,8 @@ export class PlatformCard extends LitElement {
       display: inline-block;
       width: 12px;
       height: 12px;
-      border: 2px solid rgba(129, 140, 248, 0.3);
-      border-top-color: #818cf8;
+      border: 2px solid rgba(231, 76, 60, 0.3);
+      border-top-color: #e74c3c;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin-right: 4px;
