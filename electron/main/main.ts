@@ -1,5 +1,13 @@
 import path from "node:path";
 import { app, BrowserWindow, globalShortcut, ipcMain, nativeImage, shell } from "electron";
+
+// Prevent EPIPE crashes when gateway child process exits
+process.on("uncaughtException", (err) => {
+  if ((err as NodeJS.ErrnoException).code === "EPIPE") {
+    return;
+  }
+  console.error("[main] Uncaught exception:", err);
+});
 import {
   init as initCredentialStore,
   saveCredential,
@@ -27,13 +35,17 @@ const isDev = !hasBuiltUi && !isE2E;
 
 const gateway = new GatewayProcess();
 
-// Forward gateway logs to the console.
+// Forward gateway logs to the console (ignore write errors after process exits).
 gateway.on("log", (stream: string, data: string) => {
-  const line = data.trimEnd();
-  if (stream === "stderr") {
-    console.error(`[gateway] ${line}`);
-  } else {
-    console.log(`[gateway] ${line}`);
+  try {
+    const line = data.trimEnd();
+    if (stream === "stderr") {
+      console.error(`[gateway] ${line}`);
+    } else {
+      console.log(`[gateway] ${line}`);
+    }
+  } catch {
+    // Ignore EPIPE when gateway process has exited
   }
 });
 

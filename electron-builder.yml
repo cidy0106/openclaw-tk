@@ -62,6 +62,8 @@ extraResources:
     filter:
       - "**/*"
 
+afterSign: scripts/after-sign.cjs
+
 mac:
   category: public.app-category.developer-tools
   icon: assets/icon.icns
@@ -70,6 +72,8 @@ mac:
       arch:
         - arm64
   darkModeSupport: true
+  identity: null
+  forceCodeSigning: false
 
 dmg:
   title: FreeClaw
