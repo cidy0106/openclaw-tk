@@ -119,6 +119,37 @@ function createWindow(gatewayPort: number): void {
     void mainWindow.loadURL(`http://127.0.0.1:${gatewayPort}?token=${gateway.token}`);
   }
 
+  mainWindow.webContents.on("did-finish-load", () => {
+    // Override page title (gateway UI sets "OpenClaw Control")
+    mainWindow?.setTitle("FreeClaw");
+
+    // Auto-onboarding: if no platforms connected, open platform manager
+    mainWindow?.webContents
+      .executeJavaScript(`
+      (async () => {
+        for (let i = 0; i < 30; i++) {
+          if (window.freeclaw?.app?.needsOnboarding) break;
+          await new Promise(r => setTimeout(r, 500));
+        }
+        try {
+          const needs = await window.freeclaw.app.needsOnboarding();
+          if (needs) {
+            await new Promise(r => setTimeout(r, 2000));
+            // Trigger platform manager via the Lit component's property
+            const app = document.querySelector('openclaw-app');
+            if (app) {
+              app.platformManagerOpen = true;
+              if (app.requestUpdate) app.requestUpdate();
+            }
+          }
+        } catch (e) {
+          console.log('[onboarding] check skipped:', e.message);
+        }
+      })();
+    `)
+      .catch(() => {});
+  });
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -132,6 +163,11 @@ ipcMain.handle("freeclaw:app:openExternal", (_event, url: string) => {
   if (typeof url === "string" && /^https?:\/\//i.test(url)) {
     return shell.openExternal(url);
   }
+});
+ipcMain.handle("freeclaw:app:needsOnboarding", () => {
+  // Check if any platform is connected; if none, user needs onboarding
+  const connected = PLATFORMS.some((p) => hasCredential(p.id));
+  return !connected;
 });
 
 // gateway.*

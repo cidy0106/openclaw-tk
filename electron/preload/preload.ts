@@ -30,6 +30,7 @@ export interface FreeclawAPI {
   app: {
     getVersion: () => Promise<string>;
     openExternal: (url: string) => Promise<void>;
+    needsOnboarding: () => Promise<boolean>;
   };
 }
 
@@ -56,6 +57,7 @@ const api: FreeclawAPI = {
   app: {
     getVersion: () => ipcRenderer.invoke("freeclaw:app:getVersion"),
     openExternal: (url: string) => ipcRenderer.invoke("freeclaw:app:openExternal", url),
+    needsOnboarding: () => ipcRenderer.invoke("freeclaw:app:needsOnboarding"),
   },
 };
 
