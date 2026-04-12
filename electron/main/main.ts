@@ -67,8 +67,7 @@ function createWindow(gatewayPort: number): void {
 
   mainWindow = new BrowserWindow({
     icon: appIcon.isEmpty() ? undefined : appIcon,
-    x: windowState.x,
-    y: windowState.y,
+    ...(windowState.x != null ? { x: windowState.x, y: windowState.y } : { center: true }),
     width: windowState.width,
     height: windowState.height,
     minWidth: 800,
@@ -104,6 +103,10 @@ function createWindow(gatewayPort: number): void {
   mainWindow.on("unmaximize", debouncedSave);
 
   mainWindow.setTitle("FreeClaw");
+
+  // Ensure window is on screen and visible (fix for saved position off-screen)
+  mainWindow.center();
+  mainWindow.focus();
 
   if (isDev) {
     // Dev mode: Vite dev server must be running (pnpm ui:dev)
