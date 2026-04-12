@@ -3,6 +3,14 @@ appId: com.freeclaw.desktop
 productName: FreeClaw
 copyright: Copyright © 2026 FreeClaw Contributors
 asar: true
+asarUnpack:
+  - dist/entry.js
+  - dist/index.js
+  - dist/**/*.js
+  - node_modules/**/*
+  - openclaw.mjs
+  - extensions/**/*
+  - skills/**/*
 
 files:
   - dist/**/*

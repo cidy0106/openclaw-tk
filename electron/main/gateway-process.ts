@@ -24,9 +24,17 @@ export class GatewayProcess extends EventEmitter {
   private _child: ChildProcess | null = null;
   private _healthTimer: ReturnType<typeof setInterval> | null = null;
 
-  // Project paths — computed once from __dirname
-  private readonly _projectRoot = path.resolve(__dirname, "..", "..");
-  private readonly _stateDir = path.resolve(this._projectRoot, ".openclaw-upstream-state");
+  // Project root — where gateway code lives.
+  // In packaged mode, __dirname is inside app.asar; gateway code is in app.asar.unpacked.
+  private readonly _projectRoot = path
+    .resolve(__dirname, "..", "..")
+    .replace("app.asar", "app.asar.unpacked");
+
+  // State dir — must be writable, so use ~/.freeclaw/ for packaged apps,
+  // or the project's .openclaw-upstream-state/ for dev mode.
+  private readonly _stateDir = __dirname.includes("app.asar")
+    ? path.join(os.homedir(), ".freeclaw", "state")
+    : path.resolve(this._projectRoot, ".openclaw-upstream-state");
 
   // ── Public getters ───────────────────────────────────────────────────
 
@@ -59,6 +67,24 @@ export class GatewayProcess extends EventEmitter {
 
     const configPath = path.resolve(this._stateDir, "openclaw.json");
     const entryPath = path.resolve(this._projectRoot, "dist", "entry.js");
+
+    // Ensure state directory exists (new user won't have one yet)
+    if (!fs.existsSync(this._stateDir)) {
+      fs.mkdirSync(this._stateDir, { recursive: true });
+    }
+    if (!fs.existsSync(configPath)) {
+      // Minimal config for first-time users
+      const initialConfig = {
+        gateway: { mode: "local" },
+        ui: { assistant: { name: "FreeClaw", avatar: "" } },
+      };
+      fs.writeFileSync(configPath, JSON.stringify(initialConfig, null, 2) + "\n", "utf-8");
+    }
+    // Ensure auth-profiles directory exists
+    const authDir = path.resolve(this._stateDir, "agents", "main", "agent");
+    if (!fs.existsSync(authDir)) {
+      fs.mkdirSync(authDir, { recursive: true });
+    }
 
     // Read the gateway token from the project config, or generate one.
     this._token = readGatewayTokenFromConfig(configPath) || crypto.randomBytes(16).toString("hex");
