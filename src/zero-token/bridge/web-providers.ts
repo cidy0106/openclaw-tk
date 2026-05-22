@@ -53,7 +53,7 @@ const CHATGPT_WEB_DEFAULT_COST = {
 };
 
 export const QWEN_WEB_BASE_URL = "https://chat.qwen.ai";
-export const QWEN_WEB_DEFAULT_MODEL_ID = "qwen-max";
+export const QWEN_WEB_DEFAULT_MODEL_ID = "qwen3-max";
 const QWEN_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
 const QWEN_WEB_DEFAULT_MAX_TOKENS = 8192;
 const QWEN_WEB_DEFAULT_COST = {
@@ -357,8 +357,8 @@ export async function buildQwenWebProvider(_params?: {
     api: "qwen-web",
     models: [
       {
-        id: "qwen3.5-plus",
-        name: "Qwen 3.5 Plus",
+        id: "qwen3-max",
+        name: "Qwen3 Max",
         reasoning: false,
         input: ["text"],
         cost: QWEN_WEB_DEFAULT_COST,
@@ -366,8 +366,8 @@ export async function buildQwenWebProvider(_params?: {
         maxTokens: QWEN_WEB_DEFAULT_MAX_TOKENS,
       },
       {
-        id: "qwen3.5-turbo",
-        name: "Qwen 3.5 Turbo",
+        id: "qwen3-plus",
+        name: "Qwen3 Plus",
         reasoning: false,
         input: ["text"],
         cost: QWEN_WEB_DEFAULT_COST,

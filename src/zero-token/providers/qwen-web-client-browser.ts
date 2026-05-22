@@ -150,7 +150,7 @@ export class QwenWebClientBrowser {
   }): Promise<ReadableStream<Uint8Array>> {
     const { page } = await this.ensureBrowser();
 
-    const model = params.model || "qwen3.5-plus";
+    const model = params.model || "qwen3-max";
 
     console.log(`[Qwen Web Browser] Sending message`);
     console.log(`[Qwen Web Browser] Model: ${model}`);
@@ -381,8 +381,8 @@ export class QwenWebClientBrowser {
   async discoverModels(): Promise<ModelDefinitionConfig[]> {
     return [
       {
-        id: "qwen3.5-plus",
-        name: "Qwen 3.5 Plus",
+        id: "qwen3-max",
+        name: "Qwen3 Max",
         api: "qwen-web",
         reasoning: false,
         input: ["text"],

@@ -92,7 +92,7 @@ async function addModelToWhitelist(providerId: string, modelIds: string[]): Prom
       "perplexity-web": "Perplexity Web",
     },
     "qwen-web": {
-      "qwen3.5-plus": "Qwen Web",
+      "qwen3-max": "Qwen Web",
     },
     "qwen-cn-web": {
       "qwen-turbo": "Qwen CN Web",
@@ -285,7 +285,7 @@ export async function runOnboardWebAuth(): Promise<void> {
     "grok-web": ["grok-2"],
     "kimi-web": ["moonshot-v1-32k"],
     "perplexity-web": ["perplexity-web"],
-    "qwen-web": ["qwen3.5-plus"],
+    "qwen-web": ["qwen3-max"],
     "qwen-cn-web": ["qwen-turbo"],
     "xiaomimo-web": ["xiaomimo-chat"],
   };

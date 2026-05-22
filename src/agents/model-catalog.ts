@@ -367,7 +367,7 @@ const KNOWN_WEB_MODEL_ENTRIES: ModelCatalogEntry[] = [
     contextWindow: 128000,
   },
   // qwen-web
-  { id: "qwen-max", name: "Qwen Web", provider: "qwen-web", contextWindow: 32000 },
+  { id: "qwen3-max", name: "Qwen Web", provider: "qwen-web", contextWindow: 32000 },
   // qwen-cn-web
   { id: "qwen-turbo", name: "Qwen CN Web", provider: "qwen-cn-web", contextWindow: 128000 },
   // xiaomimo-web
