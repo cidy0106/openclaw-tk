@@ -357,7 +357,7 @@ export async function buildQwenWebProvider(_params?: {
     api: "qwen-web",
     models: [
       {
-        id: "qwen3-max",
+        id: QWEN_WEB_DEFAULT_MODEL_ID,
         name: "Qwen3 Max",
         reasoning: false,
         input: ["text"],
