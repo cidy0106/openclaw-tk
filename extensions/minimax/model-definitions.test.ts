@@ -9,18 +9,18 @@ import {
 } from "./model-definitions.js";
 
 describe("minimax model definitions", () => {
-  it("uses M2.7 as default hosted model", () => {
-    expect(MINIMAX_HOSTED_MODEL_ID).toBe("MiniMax-M2.7");
+  it("uses M3 as default hosted model", () => {
+    expect(MINIMAX_HOSTED_MODEL_ID).toBe("MiniMax-M3");
   });
 
   it("uses the higher upstream MiniMax context and token defaults", () => {
     expect(DEFAULT_MINIMAX_CONTEXT_WINDOW).toBe(204800);
     expect(DEFAULT_MINIMAX_MAX_TOKENS).toBe(131072);
     expect(MINIMAX_API_COST).toEqual({
-      input: 0.3,
-      output: 1.2,
-      cacheRead: 0.06,
-      cacheWrite: 0.375,
+      input: 0.6,
+      output: 2.4,
+      cacheRead: 0.12,
+      cacheWrite: 0,
     });
   });
 

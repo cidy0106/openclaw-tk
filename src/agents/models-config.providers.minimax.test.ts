@@ -36,10 +36,12 @@ describe("minimax provider catalog", () => {
 
     const providers = await resolveImplicitProvidersForTest({ agentDir });
     expect(providers?.minimax?.models?.map((model) => model.id)).toEqual([
+      "MiniMax-M3",
       "MiniMax-M2.7",
       "MiniMax-M2.7-highspeed",
     ]);
     expect(providers?.["minimax-portal"]?.models?.map((model) => model.id)).toEqual([
+      "MiniMax-M3",
       "MiniMax-M2.7",
       "MiniMax-M2.7-highspeed",
     ]);
