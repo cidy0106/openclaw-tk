@@ -9,7 +9,7 @@ title: "MiniMax"
 # MiniMax
 
 OpenClaw's MiniMax provider defaults to **MiniMax M3**, the latest generation
-reasoning model with a 1M-token context window and image input support.
+reasoning model with a 512K-token context window and image input support.
 
 Source: [MiniMax](https://www.minimax.io)
 
@@ -17,7 +17,7 @@ Source: [MiniMax](https://www.minimax.io)
 
 OpenClaw ships the following MiniMax hosted chat models:
 
-- **`MiniMax-M3`** (default) — latest generation, 512K context context, image input.
+- **`MiniMax-M3`** (default) — latest generation, 512K context, image input.
 - **`MiniMax-M2.7`** — previous generation, 200K-token context, text input.
 - **`MiniMax-M2.7-highspeed`** — faster M2.7 tier, 200K-token context, text input.
 
