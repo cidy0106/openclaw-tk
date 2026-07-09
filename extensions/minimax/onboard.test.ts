@@ -14,14 +14,14 @@ describe("minimax onboard", () => {
   it("adds minimax provider with correct settings", () => {
     const cfg = applyMinimaxApiConfig({});
     expect(cfg.models?.providers?.minimax).toMatchObject({
-      baseUrl: "https://api.minimax.io/anthropic",
+      baseUrl: "https://api.minimax.io/anthropic/v1",
       api: "anthropic-messages",
       authHeader: true,
     });
   });
 
-  it("keeps reasoning enabled for MiniMax-M2.7", () => {
-    const cfg = applyMinimaxApiConfig({}, "MiniMax-M2.7");
+  it("keeps reasoning enabled for MiniMax-M3", () => {
+    const cfg = applyMinimaxApiConfig({}, "MiniMax-M3");
     expect(cfg.models?.providers?.minimax?.models[0]?.reasoning).toBe(true);
   });
 
@@ -31,7 +31,7 @@ describe("minimax onboard", () => {
         agents: {
           defaults: {
             models: {
-              "minimax/MiniMax-M2.7": {
+              "minimax/MiniMax-M3": {
                 alias: "MiniMax",
                 params: { custom: "value" },
               },
@@ -39,9 +39,9 @@ describe("minimax onboard", () => {
           },
         },
       },
-      "MiniMax-M2.7",
+      "MiniMax-M3",
     );
-    expect(cfg.agents?.defaults?.models?.["minimax/MiniMax-M2.7"]).toMatchObject({
+    expect(cfg.agents?.defaults?.models?.["minimax/MiniMax-M3"]).toMatchObject({
       alias: "Minimax",
       params: { custom: "value" },
     });
@@ -54,13 +54,13 @@ describe("minimax onboard", () => {
         api: "openai-completions",
       }),
     );
-    expect(cfg.models?.providers?.minimax?.baseUrl).toBe("https://api.minimax.io/anthropic");
+    expect(cfg.models?.providers?.minimax?.baseUrl).toBe("https://api.minimax.io/anthropic/v1");
     expect(cfg.models?.providers?.minimax?.api).toBe("anthropic-messages");
     expect(cfg.models?.providers?.minimax?.authHeader).toBe(true);
     expect(cfg.models?.providers?.minimax?.apiKey).toBe("old-key");
     expect(cfg.models?.providers?.minimax?.models.map((m) => m.id)).toEqual([
       "old-model",
-      "MiniMax-M2.7",
+      "MiniMax-M3",
     ]);
   });
 

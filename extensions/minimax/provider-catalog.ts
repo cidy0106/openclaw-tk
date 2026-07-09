@@ -8,14 +8,13 @@ import {
   MINIMAX_TEXT_MODEL_ORDER,
 } from "./provider-models.js";
 
-const MINIMAX_PORTAL_BASE_URL = "https://api.minimax.io/anthropic";
-const MINIMAX_DEFAULT_CONTEXT_WINDOW = 204800;
+const MINIMAX_PORTAL_BASE_URL = "https://api.minimax.io/anthropic/v1";
+const MINIMAX_DEFAULT_CONTEXT_WINDOW = 1000000;
 const MINIMAX_DEFAULT_MAX_TOKENS = 131072;
 const MINIMAX_API_COST = {
-  input: 0.3,
-  output: 1.2,
-  cacheRead: 0.06,
-  cacheWrite: 0.375,
+  input: 0.6,
+  output: 2.4,
+  cacheRead: 0.12,
 };
 
 function buildMinimaxModel(params: {
