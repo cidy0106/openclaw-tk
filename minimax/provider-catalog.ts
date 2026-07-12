@@ -8,7 +8,7 @@ import {
   MINIMAX_TEXT_MODEL_ORDER,
 } from "./provider-models.js";
 
-const MINIMAX_PORTAL_BASE_URL = "https://api.minimax.io/anthropic/v1";
+const MINIMAX_PORTAL_BASE_URL = "https://api.minimax.io/anthropic";
 const MINIMAX_DEFAULT_CONTEXT_WINDOW = 1000000;
 const MINIMAX_DEFAULT_MAX_TOKENS = 131072;
 const MINIMAX_API_COST = {

@@ -14,7 +14,7 @@ describe("minimax onboard", () => {
   it("adds minimax provider with correct settings", () => {
     const cfg = applyMinimaxApiConfig({});
     expect(cfg.models?.providers?.minimax).toMatchObject({
-      baseUrl: "https://api.minimax.io/anthropic/v1",
+      baseUrl: "https://api.minimax.io/anthropic",
       api: "anthropic-messages",
       authHeader: true,
     });
@@ -54,7 +54,7 @@ describe("minimax onboard", () => {
         api: "openai-completions",
       }),
     );
-    expect(cfg.models?.providers?.minimax?.baseUrl).toBe("https://api.minimax.io/anthropic/v1");
+    expect(cfg.models?.providers?.minimax?.baseUrl).toBe("https://api.minimax.io/anthropic");
     expect(cfg.models?.providers?.minimax?.api).toBe("anthropic-messages");
     expect(cfg.models?.providers?.minimax?.authHeader).toBe(true);
     expect(cfg.models?.providers?.minimax?.apiKey).toBe("old-key");
