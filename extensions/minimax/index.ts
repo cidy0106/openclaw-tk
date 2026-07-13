@@ -131,6 +131,7 @@ function createOAuthHandler(region: MiniMaxRegion) {
           agents: {
             defaults: {
               models: {
+                [portalModelRef(DEFAULT_MODEL)]: { alias: "minimax-m3" },
                 [portalModelRef("MiniMax-M2.7")]: { alias: "minimax-m2.7" },
                 [portalModelRef("MiniMax-M2.7-highspeed")]: {
                   alias: "minimax-m2.7-highspeed",
@@ -189,7 +190,7 @@ export default definePluginEntry({
             choiceHint: "Global endpoint - api.minimax.io",
             groupId: "minimax",
             groupLabel: "MiniMax",
-            groupHint: "M2.7 (recommended)",
+            groupHint: "M3 (recommended)",
           },
         }),
         createProviderApiKeyAuthMethod({
@@ -213,7 +214,7 @@ export default definePluginEntry({
             choiceHint: "CN endpoint - api.minimaxi.com",
             groupId: "minimax",
             groupLabel: "MiniMax",
-            groupHint: "M2.7 (recommended)",
+            groupHint: "M3 (recommended)",
           },
         }),
       ],
@@ -255,7 +256,7 @@ export default definePluginEntry({
             choiceHint: "Global endpoint - api.minimax.io",
             groupId: "minimax",
             groupLabel: "MiniMax",
-            groupHint: "M2.7 (recommended)",
+            groupHint: "M3 (recommended)",
           },
           run: createOAuthHandler("global"),
         },
@@ -270,7 +271,7 @@ export default definePluginEntry({
             choiceHint: "CN endpoint - api.minimaxi.com",
             groupId: "minimax",
             groupLabel: "MiniMax",
-            groupHint: "M2.7 (recommended)",
+            groupHint: "M3 (recommended)",
           },
           run: createOAuthHandler("cn"),
         },
